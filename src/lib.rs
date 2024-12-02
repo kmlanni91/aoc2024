@@ -11,6 +11,8 @@ pub use runner::Run;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
+
+    pub input: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]

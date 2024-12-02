@@ -1,11 +1,14 @@
+use std::error::Error;
+
 use clap::Parser;
 use aoc;
 use aoc::Run;
 
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let cli = aoc::Cli::parse();
-
-    aoc::to_runner(&cli.command).run();
+    let input = &cli.input.ok_or("No Input provided!")?; 
+    let _ = aoc::to_runner(&cli.command).run(input);
+    Ok(())
 }
 
