@@ -12,6 +12,7 @@ pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
 
+    #[arg(global=true)]
     pub input: Option<String>,
 }
 

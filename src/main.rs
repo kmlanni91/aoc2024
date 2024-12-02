@@ -1,5 +1,6 @@
 use std::error::Error;
-
+use std::io::BufReader;
+use std::fs::File;
 use clap::Parser;
 use aoc;
 use aoc::Run;
@@ -7,8 +8,11 @@ use aoc::Run;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = aoc::Cli::parse();
-    let input = &cli.input.ok_or("No Input provided!")?; 
-    let _ = aoc::to_runner(&cli.command).run(input);
+    let input_path = &cli.input.ok_or("No Input provided!")?; 
+    let f = File::open(input_path)?;
+    let runner = aoc::to_runner(&cli.command);
+    let result = runner.run(BufReader::new(f))?;
+    println!("{}", result);
     Ok(())
 }
 

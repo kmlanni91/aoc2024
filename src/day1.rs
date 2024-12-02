@@ -1,7 +1,7 @@
 use std::{
     fmt::Debug,
-    fs::File,
-    io::{BufRead, BufReader},
+    io::BufRead,
+    iter::zip,
 };
 
 use crate::runner::{InputParseError, Run};
@@ -11,16 +11,16 @@ pub struct Runner;
 
 impl Run for Runner {
     #[allow(refining_impl_trait)]
-    fn run(&self, fp: &str) -> Result<u32, InputParseError> {
-        let val = "Test day1";
-        println!("{}", val);
-        Ok(0)
+    fn run(&self, reader: impl BufRead) -> Result<u32, InputParseError> {
+        let (mut left, mut right) = parse(reader)?;
+        left.sort();
+        right.sort();
+        Ok(calculate_distance(left, right))
     }
 }
 
-fn parse(fp: &str) -> Result<(Vec<u32>, Vec<u32>), InputParseError> {
-    let f = File::open(fp).unwrap();
-    let lists: Result<Vec<(u32, u32)>, InputParseError> = BufReader::new(f)
+fn parse(reader: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), InputParseError> {
+    let lists: Result<Vec<(u32, u32)>, InputParseError> = reader
         .lines()
         .map(|x| {
             x.map_err(|_x| InputParseError {
@@ -55,21 +55,30 @@ fn parse_line(line: String) -> Result<(u32, u32), InputParseError> {
     Ok((left.clone(), right.clone()))
 }
 
+fn calculate_distance(left: Vec<u32>, right: Vec<u32>) -> u32 {
+    assert_eq!(left.len(), right.len());
+    zip(left, right).map(|(x, y)| x.abs_diff(y)).sum()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn sample1() {
-        let input = "3   4\n\
-                     4   3\n\
-                     2   5\n\
-                     1   3\n\
-                     3   9\n\
-                     3   3";
+        let input = String::from(
+            "3   4\n\
+             4   3\n\
+             2   5\n\
+             1   3\n\
+             3   9\n\
+             3   3",
+        );
 
         let expected = 11;
-        let result = Runner.run(&input).expect("Unexpected parse error");
+        let result = Runner
+            .run(BufReader::new(&mut input.as_bytes()))
+            .expect("Unexpected parse error");
         assert_eq!(result, expected)
     }
 }
