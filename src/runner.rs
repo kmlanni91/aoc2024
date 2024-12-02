@@ -14,5 +14,7 @@ impl Display for InputParseError {
 impl Error for InputParseError {}
 
 pub trait Run {
-    fn run(&self, reader: impl BufRead) -> Result<impl Display, InputParseError>;
+    fn run(&self, reader: impl BufRead) -> Result<u64, InputParseError>;
+
+    fn run2(&self, reader: impl BufRead) -> Result<u64, InputParseError>;
 }

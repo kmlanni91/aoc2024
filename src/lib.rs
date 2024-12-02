@@ -14,6 +14,9 @@ pub struct Cli {
 
     #[arg(global=true)]
     pub input: Option<String>,
+
+    #[arg(short, long, global=true, default_value_t=false)]
+    pub part2: bool,
 }
 
 #[derive(Subcommand, Debug)]

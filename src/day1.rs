@@ -11,12 +11,18 @@ pub struct Runner;
 
 impl Run for Runner {
     #[allow(refining_impl_trait)]
-    fn run(&self, reader: impl BufRead) -> Result<u32, InputParseError> {
+    fn run(&self, reader: impl BufRead) -> Result<u64, InputParseError> {
         let (mut left, mut right) = parse(reader)?;
         left.sort();
         right.sort();
         Ok(calculate_distance(left, right))
     }
+
+    #[allow(refining_impl_trait)]
+    fn run2(&self, _reader: impl BufRead) -> Result<u64, InputParseError> {
+        Ok(0)
+    }
+
 }
 
 fn parse(reader: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), InputParseError> {
@@ -55,9 +61,9 @@ fn parse_line(line: String) -> Result<(u32, u32), InputParseError> {
     Ok((left.clone(), right.clone()))
 }
 
-fn calculate_distance(left: Vec<u32>, right: Vec<u32>) -> u32 {
+fn calculate_distance(left: Vec<u32>, right: Vec<u32>) -> u64 {
     assert_eq!(left.len(), right.len());
-    zip(left, right).map(|(x, y)| x.abs_diff(y)).sum()
+    u64::from(zip(left, right).map(|(x, y)| x.abs_diff(y)).sum::<u32>())
 }
 
 #[cfg(test)]
