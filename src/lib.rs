@@ -4,6 +4,8 @@ use clap::{Parser, Subcommand};
 mod runner;
 mod day1;
 pub use runner::Run;
+use runner::RunFile;
+mod day2;
 
 
 #[derive(Parser, Debug)]
@@ -22,12 +24,14 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Day1,
+    Day2,
 }
 
 
-pub fn to_runner(command: &Option<Commands>) -> impl Run {
+pub fn to_runner(command: &Option<Commands>) -> Box<dyn RunFile> {
     match command {
-        Some(Commands::Day1) => day1::Runner,
+        Some(Commands::Day1) => Box::new(day1::Runner),
+        Some(Commands::Day2) => Box::new(day2::Runner),
         None => panic!("Not a valid command runner")
     }
 }

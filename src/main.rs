@@ -3,7 +3,6 @@ use std::io::BufReader;
 use std::fs::File;
 use clap::Parser;
 use aoc;
-use aoc::Run;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
