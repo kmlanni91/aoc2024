@@ -1,8 +1,4 @@
-use std::{
-    fmt::Debug,
-    io::BufRead,
-    iter::zip,
-};
+use std::{collections::HashMap, fmt::Debug, io::BufRead, iter::zip, u64};
 
 use crate::runner::{InputParseError, Run};
 
@@ -19,10 +15,12 @@ impl Run for Runner {
     }
 
     #[allow(refining_impl_trait)]
-    fn run2(&self, _reader: impl BufRead) -> Result<u64, InputParseError> {
-        Ok(0)
+    fn run2(&self, reader: impl BufRead) -> Result<u64, InputParseError> {
+        let (mut left, mut right) = parse(reader)?;
+        left.sort();
+        right.sort();
+        Ok(calculate_sim_score(left, right))
     }
-
 }
 
 fn parse(reader: impl BufRead) -> Result<(Vec<u32>, Vec<u32>), InputParseError> {
@@ -66,12 +64,31 @@ fn calculate_distance(left: Vec<u32>, right: Vec<u32>) -> u64 {
     u64::from(zip(left, right).map(|(x, y)| x.abs_diff(y)).sum::<u32>())
 }
 
+fn add_to_counter(mut counter: HashMap<u32, u64>, num: u32) -> HashMap<u32, u64> {
+    let mut count = 1;
+    if let Some(val) = counter.get(&num) {
+        count += val;
+    }
+    counter.insert(num, count);
+    counter
+}
+
+fn calculate_sim_score(left: Vec<u32>, right: Vec<u32>) -> u64 {
+    assert_eq!(left.len(), right.len());
+    let counter: HashMap<u32, u64> = HashMap::new();
+    let counts = right.iter().fold(counter, |acc, x| add_to_counter(acc, *x));
+    left.iter()
+        .map(|x| counts.get(x).unwrap_or(&0) * u64::from(*x))
+        .sum()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::io::BufReader;
 
     #[test]
-    fn sample1() {
+    fn part1() {
         let input = String::from(
             "3   4\n\
              4   3\n\
@@ -84,6 +101,24 @@ mod test {
         let expected = 11;
         let result = Runner
             .run(BufReader::new(&mut input.as_bytes()))
+            .expect("Unexpected parse error");
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn part2() {
+        let input = String::from(
+            "3   4\n\
+             4   3\n\
+             2   5\n\
+             1   3\n\
+             3   9\n\
+             3   3",
+        );
+
+        let expected = 31;
+        let result = Runner
+            .run2(BufReader::new(&mut input.as_bytes()))
             .expect("Unexpected parse error");
         assert_eq!(result, expected)
     }
