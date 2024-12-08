@@ -1,3 +1,5 @@
+default:
+    @just --list
 
 new-day day:
     @cp templates/day.rs src/day{{day}}.rs
