@@ -21,8 +21,19 @@ impl Run for Runner {
     }
 
     #[allow(refining_impl_trait)]
-    fn run2(&self, _reader: impl BufRead) -> Result<u64, InputParseError> {
-        Ok(0)
+    fn run2(&self, reader: impl BufRead) -> Result<u64, InputParseError> {
+        let reports = parse(reader)?;
+        //println!("{:?}", reports);
+        //println!("{}", reports.len());
+        Ok(u64::try_from(
+            reports
+                .iter()
+                .map(|report| analyze_with_dampener(report))
+                .filter(|safety| *safety == Safety::Safe)
+                .count(),
+        )
+        .expect("Count was bigger than u64"))
+
     }
 }
 
@@ -66,6 +77,29 @@ struct ReportState {
     safety: Safety,
     direction: Option<Direction>,
     prev: Option<u32>,
+}
+
+fn analyze_with_dampener(report: &Vec<u32>) -> Safety {
+    let safety = analyze_report(report);
+    match safety {
+        Safety::Safe => safety,
+        Safety::UnSafe => {
+            for i in 0..report.len() {
+                let skipped_report: Vec<u32> = report
+                    .iter()
+                    .enumerate()
+                    .filter(|(idx, _)| *idx != i)
+                    .map(|(_, v)| v)
+                    .cloned()
+                    .collect();
+                let safety_with_skip = analyze_report(&skipped_report);
+                if let Safety::Safe = safety_with_skip {
+                    return safety_with_skip;
+                }
+            }
+            Safety::UnSafe
+        }
+    }
 }
 
 fn analyze_report(report: &Vec<u32>) -> Safety {
@@ -115,12 +149,18 @@ fn compute_state(state: ReportState, next: u32) -> ReportState {
                 } else {
                     Safety::UnSafe
                 }
-            },
+            }
             (_, Some(Direction::Neutral)) => Safety::UnSafe,
-            (None, _) => if is_in_range {Safety::Safe} else {Safety::UnSafe},
+            (None, _) => {
+                if is_in_range {
+                    Safety::Safe
+                } else {
+                    Safety::UnSafe
+                }
+            }
             _ => Safety::Safe,
         },
-        Safety::UnSafe => Safety::UnSafe
+        Safety::UnSafe => Safety::UnSafe,
     };
     ReportState {
         safety,
@@ -255,7 +295,6 @@ mod test {
                 prev: Some(11)
             }
         );
-
     }
 
     #[test]
@@ -287,9 +326,18 @@ mod test {
 
     #[test]
     fn part2() {
-        let input = String::from("");
+        let input = String::from(
+            "\
+            7 6 4 2 1
+            1 2 7 8 9
+            9 7 6 2 1
+            1 3 2 4 5
+            8 6 4 4 1
+            1 3 6 7 9\
+        ",
+        );
 
-        let expected = 1;
+        let expected = 4;
         let result = Runner
             .run2(BufReader::new(&mut input.as_bytes()))
             .expect("Unexpected parse error");
