@@ -16,8 +16,21 @@ impl Run for Runner {
     }
 }
 
-fn parse(reader: impl BufRead) -> Result<(), InputParseError> {
-    Ok(())
+/*
+Grammar
+expr -> MUL LPAREN 3DIGITLIT COMMA 3DIGITLIT RPAREN
+*/
+#[derive(Debug, Clone)]
+enum GrammarItem {
+    Mul,
+    Paren,
+    Comma,
+    Num(u32)
+}
+
+
+fn parse(reader: impl BufRead) -> Result<Vec<(u32,u32)>, InputParseError> {
+    Ok(vec![])
 }
 
 fn parse_line(line: String) -> Result<(), InputParseError> {
@@ -29,6 +42,15 @@ fn parse_line(line: String) -> Result<(), InputParseError> {
 mod test {
     use super::*;
     use std::io::BufReader;
+
+    #[test]
+    fn parser_test() {
+        let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+
+        let expected = vec![(2,4),(5,5),(11,8),(8,5)];
+        let result = parse(BufReader::new(&mut input.as_bytes())).unwrap();
+        assert_eq!(result, expected)
+    }
 
     #[test]
     fn part1() {
