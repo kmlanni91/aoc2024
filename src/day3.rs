@@ -25,18 +25,19 @@ enum GrammarItem {
     Mul,
     Paren,
     Comma,
-    Num(u32)
+    Num(u32),
 }
 
+fn parse(reader: impl BufRead) -> Result<Vec<(u32, u32)>, InputParseError> {
+    let buffer = reader.bytes(); 
+    let mut parsed: Vec<(u32, u32)> = Vec::new();
 
-fn parse(reader: impl BufRead) -> Result<Vec<(u32,u32)>, InputParseError> {
-    Ok(vec![])
+    Ok(parsed)
 }
 
 fn parse_line(line: String) -> Result<(), InputParseError> {
     Ok(())
 }
-
 
 #[cfg(test)]
 mod test {
@@ -47,7 +48,7 @@ mod test {
     fn parser_test() {
         let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
 
-        let expected = vec![(2,4),(5,5),(11,8),(8,5)];
+        let expected = vec![(2, 4), (5, 5), (11, 8), (8, 5)];
         let result = parse(BufReader::new(&mut input.as_bytes())).unwrap();
         assert_eq!(result, expected)
     }
